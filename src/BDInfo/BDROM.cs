@@ -435,7 +435,7 @@ public class BDROM
         if (count > 0)
         {
             var indexVer = ToolBox.ReadString(buffer, ref pos);
-            IsUHD = indexVer == "INDX0300";
+            IsUHD = string.Equals(indexVer, "INDX0300", StringComparison.Ordinal);
         }
     }
 }

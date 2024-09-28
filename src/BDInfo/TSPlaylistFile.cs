@@ -977,12 +977,12 @@ public class TSPlaylistFile
             return 1;
         }
 
-        if (x.LanguageCode == "eng")
+        if (string.Equals(x.LanguageCode, "eng", StringComparison.OrdinalIgnoreCase))
         {
             return -1;
         }
 
-        if (y.LanguageCode == "eng")
+        if (string.Equals(y.LanguageCode, "eng", StringComparison.OrdinalIgnoreCase))
         {
             return 1;
         }
@@ -1020,12 +1020,12 @@ public class TSPlaylistFile
             return 1;
         }
 
-        if (x.LanguageCode == "eng")
+        if (string.Equals(x.LanguageCode, "eng", StringComparison.OrdinalIgnoreCase))
         {
             return -1;
         }
 
-        if (y.LanguageCode == "eng")
+        if (string.Equals(y.LanguageCode, "eng", StringComparison.OrdinalIgnoreCase))
         {
             return 1;
         }
@@ -1082,12 +1082,12 @@ public class TSPlaylistFile
             return 1;
         }
 
-        if (x.LanguageCode == "eng")
+        if (string.Equals(x.LanguageCode, "eng", StringComparison.OrdinalIgnoreCase))
         {
             return -1;
         }
 
-        if (y.LanguageCode == "eng")
+        if (string.Equals(y.LanguageCode, "eng", StringComparison.OrdinalIgnoreCase))
         {
             return 1;
         }
