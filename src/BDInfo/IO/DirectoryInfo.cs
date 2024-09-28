@@ -10,7 +10,7 @@ public class DirectoryInfo : IDirectoryInfo
 
     public string FullName => _impl.FullName;
 
-    public IDirectoryInfo Parent => _impl.Parent != null ? new DirectoryInfo(_impl.Parent) : null;
+    public IDirectoryInfo Parent => _impl.Parent is not null ? new DirectoryInfo(_impl.Parent) : null;
 
     public DirectoryInfo(string path)
     {

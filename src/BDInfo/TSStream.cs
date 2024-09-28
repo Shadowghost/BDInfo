@@ -437,7 +437,7 @@ public abstract class TSStream
 
     protected void CopyTo(TSStream stream)
     {
-        if (stream == null) return;
+        if (stream is null) return;
 
         stream.PID = PID;
         stream.StreamType = StreamType;
@@ -446,7 +446,7 @@ public abstract class TSStream
         stream.IsInitialized = IsInitialized;
         stream.LanguageCode = _languageCode;
 
-        if (Descriptors == null) return;
+        if (Descriptors is null) return;
 
         stream.Descriptors = new List<TSDescriptor>();
         foreach (var descriptor in Descriptors)
@@ -560,7 +560,7 @@ public class TSVideoStream : TSStream
         {
             var description = "";
 
-            if (BaseView != null)
+            if (BaseView is not null)
             {
                 if (BaseView == true)
                     description += "Right Eye";
@@ -597,11 +597,11 @@ public class TSVideoStream : TSStream
                     description += "16:9 / ";
                     break;
             }
-            if (EncodingProfile != null)
+            if (EncodingProfile is not null)
             {
                 description += EncodingProfile + " / ";
             }
-            if (StreamType == TSStreamType.HEVC_VIDEO && ExtendedData != null)
+            if (StreamType == TSStreamType.HEVC_VIDEO && ExtendedData is not null)
             {
                 var extendedData = (TSCodecHEVC.ExtendedDataSet)ExtendedData;
                 var extendedInfo = string.Join(" / ", extendedData.ExtendedFormatInfo);
@@ -743,7 +743,7 @@ public class TSAudioStream : TSStream
             if (BitRate > 0)
             {
                 long coreBitRate = 0;
-                if (StreamType == TSStreamType.AC3_TRUE_HD_AUDIO && CoreStream != null)
+                if (StreamType == TSStreamType.AC3_TRUE_HD_AUDIO && CoreStream is not null)
                     coreBitRate = CoreStream.BitRate;
                 description +=
                     FormattableString.Invariant(
@@ -779,7 +779,7 @@ public class TSAudioStream : TSStream
                 description = description[..^3];
             }
 
-            if (CoreStream == null) return description;
+            if (CoreStream is null) return description;
             var codec = CoreStream.StreamType switch
             {
                 TSStreamType.AC3_AUDIO => "AC3 Embedded",
@@ -807,7 +807,7 @@ public class TSAudioStream : TSStream
         stream.AudioMode = AudioMode;
         stream.ExtendedData = ExtendedData;
 
-        if (CoreStream != null)
+        if (CoreStream is not null)
         {
             stream.CoreStream = (TSAudioStream)CoreStream.Clone();
         }

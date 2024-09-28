@@ -38,7 +38,7 @@ public class TSStreamClipFile
     public TSStreamClipFile(IFileInfo fileInfo)
     {
         FileInfo = fileInfo;
-        Name = fileInfo.Name.ToUpper();
+        Name = fileInfo.Name.ToUpperInvariant();
     }
 
     public void Scan()
@@ -54,10 +54,10 @@ public class TSStreamClipFile
 #endif
             Streams.Clear();
 
-            if (FileInfo != null)
+            if (FileInfo is not null)
             {
                 fileStream = FileInfo.OpenRead();
-                if (fileStream != null)
+                if (fileStream is not null)
                 {
                     fileReader = new BinaryReader(fileStream);
                     streamLength = (ulong)fileStream.Length;
@@ -203,7 +203,7 @@ public class TSStreamClipFile
                         break;
                 }
 
-                if (stream != null)
+                if (stream is not null)
                 {
                     stream.PID = pid;
                     stream.StreamType = streamType;

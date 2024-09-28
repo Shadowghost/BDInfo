@@ -176,7 +176,7 @@ public class TSStreamFile
     public TSStreamFile(IFileInfo fileInfo)
     {
         FileInfo = fileInfo;
-        Name = fileInfo.Name.ToUpper();
+        Name = fileInfo.Name.ToUpperInvariant();
     }
 
     public string DisplayName
@@ -184,7 +184,7 @@ public class TSStreamFile
         get
         {
             if (BDInfoSettings.EnableSSIF &&
-                InterleavedFile != null)
+                InterleavedFile is not null)
             {
                 return InterleavedFile.Name;
             }
@@ -333,10 +333,10 @@ public class TSStreamFile
 
     private void UpdateStreamBitrates(ushort ptsPid, BigInteger pts, BigInteger ptsDiff)
     {
-        if (_playlists == null) return;
+        if (_playlists is null) return;
 
         foreach (var pid in _streamStates.Keys
-                     .Where(pid => !Streams.ContainsKey(pid) || !Streams[pid].IsVideoStream || pid == ptsPid)
+                     .Where(pid => !Streams.TryGetValue(pid, out var value) || !value.IsVideoStream || pid == ptsPid)
                      .Where(pid => _streamStates[pid].WindowPackets != 0))
         {
             UpdateStreamBitrate(pid, ptsPid, pts, ptsDiff);
@@ -357,7 +357,7 @@ public class TSStreamFile
 
     private void UpdateStreamBitrate(ushort pid, ushort ptspid, BigInteger pts, BigInteger ptsDiff)
     {
-        if (_playlists == null) return;
+        if (_playlists is null) return;
 
         var streamState = _streamStates[pid];
         var streamTime = (double)pts / 90000;
@@ -386,9 +386,7 @@ public class TSStreamFile
                     playlistStreams = playlist.AngleStreams[clip.AngleIndex - 1];
                 }
 
-                if (!playlistStreams.ContainsKey(pid)) continue;
-
-                var stream = playlistStreams[pid];
+                if (!playlistStreams.TryGetValue(pid, out var stream)) continue;
 
                 stream.PayloadBytes += streamState.WindowBytes;
                 stream.PacketCount += streamState.WindowPackets;
@@ -402,20 +400,19 @@ public class TSStreamFile
                         stream.PacketSeconds);
                 }
 
-                if (stream.StreamType == TSStreamType.AC3_TRUE_HD_AUDIO && ((TSAudioStream)stream).CoreStream != null)
+                if (stream.StreamType == TSStreamType.AC3_TRUE_HD_AUDIO && ((TSAudioStream)stream).CoreStream is not null)
                 {
                     stream.ActiveBitRate -= ((TSAudioStream)stream).CoreStream.BitRate;
                 }
             }
         }
 
-        if (Streams.ContainsKey(pid))
+        if (Streams.TryGetValue(pid, out var stream2))
         {
-            var stream = Streams[pid];
-            stream.PayloadBytes += streamState.WindowBytes;
-            stream.PacketCount += streamState.WindowPackets;
+            stream2.PayloadBytes += streamState.WindowBytes;
+            stream2.PacketCount += streamState.WindowPackets;
 
-            if (stream.IsVideoStream)
+            if (stream2.IsVideoStream)
             {
                 var diag = new TSStreamDiagnostics
                 {
@@ -427,7 +424,7 @@ public class TSStreamFile
                 };
                 StreamDiagnostics[pid].Add(diag);
 
-                stream.PacketSeconds += streamInterval;
+                stream2.PacketSeconds += streamInterval;
             }
         }
         streamState.WindowPackets = 0;
@@ -436,7 +433,7 @@ public class TSStreamFile
 
     public void Scan(List<TSPlaylistFile> playlists, bool isFullScan)
     {
-        if (playlists == null || playlists.Count == 0)
+        if (playlists is null || playlists.Count == 0)
         {
             return;
         }
@@ -446,9 +443,9 @@ public class TSStreamFile
         Stream fileStream = null;
         try
         {
-            if (BDInfoSettings.EnableSSIF && InterleavedFile != null)
+            if (BDInfoSettings.EnableSSIF && InterleavedFile is not null)
             {
-                if (InterleavedFile.FileInfo != null)
+                if (InterleavedFile.FileInfo is not null)
                     fileStream = InterleavedFile.FileInfo.OpenRead();
             }
             else
@@ -521,11 +518,11 @@ public class TSStreamFile
                             {
                                 parser.PID |= buffer[i];
                                 parser.Stream = Streams.ContainsKey(parser.PID) ? Streams[parser.PID] : null;
-                                if (!_streamStates.ContainsKey(parser.PID))
+                                if (!_streamStates.TryGetValue(parser.PID, out var state))
                                 {
                                     _streamStates[parser.PID] = new TSStreamState();
                                 }
-                                parser.StreamState = _streamStates[parser.PID];
+                                parser.StreamState = state;
                                 parser.StreamState.TotalPackets++;
                                 parser.StreamState.WindowPackets++;
                                 parser.TotalPackets++;
@@ -798,7 +795,7 @@ public class TSStreamFile
                                                 streamType, streamPID, streamInfoLength));
                                              */
 
-                                                if (!Streams.ContainsKey(streamPID))
+                                                if (!Streams.TryGetValue(streamPID, out var stream))
                                                 {
                                                     var streamDescriptors = new List<TSDescriptor>();
 
@@ -823,8 +820,8 @@ public class TSStreamFile
                                                 }
                                                 */
                                                     CreateStream(streamPID, streamType, streamDescriptors);
-                                                    if (Streams[streamPID].IsGraphicsStream)
-                                                        Streams[streamPID].IsInitialized = !isFullScan;
+                                                    if (stream.IsGraphicsStream)
+                                                        stream.IsInitialized = !isFullScan;
                                                 }
                                                 k += streamInfoLength;
                                             }
@@ -1446,11 +1443,11 @@ public class TSStreamFile
             BigInteger ptsDiff = 0;
             foreach (var stream in Streams.Values.Where(stream => stream.IsVideoStream))
             {
-                if (_streamStates.ContainsKey(stream.PID) &&
-                    _streamStates[stream.PID].PTSLast > ptsLast)
+                if (_streamStates.TryGetValue(stream.PID, out var state) &&
+                    state.PTSLast > ptsLast)
                 {
-                    ptsLast = _streamStates[stream.PID].PTSLast;
-                    ptsDiff = ptsLast - _streamStates[stream.PID].DTSPrev;
+                    ptsLast = state.PTSLast;
+                    ptsDiff = ptsLast - state.DTSPrev;
                 }
                 UpdateStreamBitrates(stream.PID, ptsLast, ptsDiff);
             }
@@ -1516,7 +1513,7 @@ public class TSStreamFile
                 break;
         }
 
-        if (stream != null && !Streams.ContainsKey(streamPID))
+        if (stream is not null && Streams.ContainsKey(streamPID))
         {
             stream.PID = streamPID;
             stream.StreamType = (TSStreamType)streamType;

@@ -31,6 +31,6 @@ public class TSInterleavedFile
     public TSInterleavedFile(IFileInfo fileInfo)
     {
         FileInfo = fileInfo;
-        Name = fileInfo.Name.ToUpper();
+        Name = fileInfo.Name.ToUpperInvariant();
     }
 }

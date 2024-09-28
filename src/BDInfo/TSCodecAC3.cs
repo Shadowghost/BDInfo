@@ -73,7 +73,7 @@ public abstract class TSCodecAC3
         if (stream.IsInitialized) return;
 
         var sync = buffer.ReadBytes(2);
-        if (sync != null && (sync[0] != 0x0B || sync[1] != 0x77))
+        if (sync is not null && (sync[0] != 0x0B || sync[1] != 0x77))
         {
             return;
         }
@@ -91,7 +91,7 @@ public abstract class TSCodecAC3
 
         var hdr = buffer.ReadBytes(4);
 
-        if (hdr == null) return;
+        if (hdr is null) return;
 
         var bsid = (uint)((hdr[3] & 0xF8) >> 3);
         buffer.Seek(-4, SeekOrigin.Current);
@@ -327,7 +327,7 @@ public abstract class TSCodecAC3
         else
         {
             stream.BitRate = (long)(4.0 * frameSize * stream.SampleRate / (numBlocks * 256));
-            if (stream.CoreStream != null)
+            if (stream.CoreStream is not null)
                 stream.BitRate += stream.CoreStream.BitRate;
         }
 

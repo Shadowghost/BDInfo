@@ -243,9 +243,9 @@ public abstract class TSCodecHEVC
         internal bool GeneralFrameOnlyConstraintFlag;
 
         //computed
-        internal bool NalHrdBpPresentFlag => VUIParameters.NAL != null;
-        internal bool VclHrdPbPresentFlag => VUIParameters.VCL != null;
-        internal bool CpbDpbDelaysPresentFlag => VUIParameters.XXLCommon != null;
+        internal bool NalHrdBpPresentFlag => VUIParameters.NAL is not null;
+        internal bool VclHrdPbPresentFlag => VUIParameters.VCL is not null;
+        internal bool CpbDpbDelaysPresentFlag => VUIParameters.XXLCommon is not null;
         internal byte ChromaArrayType => SeparateColourPlaneFlag ? (byte)0 : ChromaFormatIDC;
 
         internal SeqParameterSetStruct(VUIParametersStruct vuiParameters,
@@ -575,7 +575,7 @@ public abstract class TSCodecHEVC
                 case 20:
                 case 21:
                     tag = SliceSegmentLayer(buffer, nalUnitType);
-                    frameTypeRead = tag != null;
+                    frameTypeRead = tag is not null;
                     break;
                 case 32:
                     VideoParameterSet(buffer);
@@ -1155,7 +1155,7 @@ public abstract class TSCodecHEVC
         seqParameterSetID = buffer.ReadExp(true);
 
         SeqParameterSetStruct seqParameterSetItem;
-        if (seqParameterSetID >= _seqParameterSets!.Count || (seqParameterSetItem = _seqParameterSets[(int)seqParameterSetID]) == null)
+        if (seqParameterSetID >= _seqParameterSets!.Count || (seqParameterSetItem = _seqParameterSets[(int)seqParameterSetID]) is null)
         {
             buffer.BSSkipBits((int)(payloadSize * 8), true);
             return;
@@ -1184,7 +1184,7 @@ public abstract class TSCodecHEVC
 
     private static void SeiMessageBufferingPeriodXXL(TSStreamBuffer buffer, XXLCommon xxlCommon, bool irapCPBParamsPresentFlag, XXL xxl, uint payloadSize)
     {
-        if (xxlCommon == null || xxl == null)
+        if (xxlCommon is null || xxl is null)
         {
             buffer.BSSkipBits((int)(payloadSize * 8), true);
             return;
@@ -1207,7 +1207,7 @@ public abstract class TSCodecHEVC
         if (seqParameterSetID == uint.MaxValue && _seqParameterSets!.Count == 1)
             seqParameterSetID = 0;
         SeqParameterSetStruct seqParameterSetItem;
-        if (seqParameterSetID >= _seqParameterSets!.Count || (seqParameterSetItem = _seqParameterSets[(int)seqParameterSetID]) == null)
+        if (seqParameterSetID >= _seqParameterSets!.Count || (seqParameterSetItem = _seqParameterSets[(int)seqParameterSetID]) is null)
         {
             buffer.BSSkipBits((int)(payloadSize * 8), true);
             return;

@@ -146,7 +146,7 @@ public abstract class TSCodecTrueHD
 #endif
         /*
         // TODO: Get THD dialnorm from metadata
-        if (stream.CoreStream != null)
+        if (stream.CoreStream is not null)
         {
             TSAudioStream coreStream = (TSAudioStream)stream.CoreStream;
             if (coreStream.DialNorm != 0)

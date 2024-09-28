@@ -17,6 +17,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //=============================================================================
 
+using System;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Text;
@@ -25,10 +26,17 @@ namespace BDInfo;
 
 public class ToolBox
 {
+    public static string ReadString(ReadOnlySpan<byte> data, ref int pos)
+    {
+        string val = Encoding.ASCII.GetString(data);
+        pos += data.Length;
+
+        return val;
+    }
+
     public static string ReadString(byte[] data, int count, ref int pos)
     {
         var val = Encoding.ASCII.GetString(data, pos, count);
-
         pos += count;
 
         return val;
@@ -41,6 +49,7 @@ public class ToolBox
                 null);
         var isoFile = isolatedStorageFile.OpenFile(fileName, readFile ? FileMode.OpenOrCreate : FileMode.Create,
             FileAccess.ReadWrite, FileShare.ReadWrite);
+
         return isoFile;
     }
 

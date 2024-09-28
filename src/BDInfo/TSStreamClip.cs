@@ -46,15 +46,15 @@ public class TSStreamClip
 
     public TSStreamClip(TSStreamFile streamFile, TSStreamClipFile streamClipFile)
     {
-        if (streamFile != null)
+        if (streamFile is not null)
         {
             Name = streamFile.Name;
             StreamFile = streamFile;
 
-            if (StreamFile.FileInfo != null)
+            if (StreamFile.FileInfo is not null)
                 FileSize = (ulong)StreamFile.FileInfo.Length;
 
-            if (StreamFile.InterleavedFile is { FileInfo: { } }) 
+            if (StreamFile.InterleavedFile?.FileInfo is not null) 
                 InterleavedFileSize = (ulong)StreamFile.InterleavedFile.FileInfo.Length;
         }
         StreamClipFile = streamClipFile;
@@ -64,7 +64,7 @@ public class TSStreamClip
     {
         get
         {
-            if (StreamFile is { InterleavedFile: { } } && BDInfoSettings.EnableSSIF)
+            if (StreamFile?.InterleavedFile is not null && BDInfoSettings.EnableSSIF)
             {
                 return StreamFile.InterleavedFile.Name;
             }
@@ -90,9 +90,8 @@ public class TSStreamClip
     {
         foreach (var stream1 in StreamFile.Streams.Values)
         {
-            if (!clip.StreamFile.Streams.ContainsKey(stream1.PID)) continue;
+            if (!clip.StreamFile.Streams.TryGetValue(stream1.PID, out var stream2)) continue;
 
-            var stream2 = clip.StreamFile.Streams[stream1.PID];
             if (stream1.StreamType != stream2.StreamType)
             {
                 return false;

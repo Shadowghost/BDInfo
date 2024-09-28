@@ -26,7 +26,7 @@ public abstract class TSCodecLPCM
         if (stream.IsInitialized) return;
 
         var header = buffer.ReadBytes(4);
-        if (header != null)
+        if (header is not null)
         {
             var flags = (header[2] << 8) + header[3];
 

@@ -58,7 +58,7 @@ public class TSPlaylistFile
     {
         BDROM = bdrom;
         _fileInfo = fileInfo;
-        Name = fileInfo.Name.ToUpper();
+        Name = fileInfo.Name.ToUpperInvariant();
     }
 
     public TSPlaylistFile(BDROM bdrom, string name, List<TSStreamClip> clips)
@@ -195,7 +195,9 @@ public class TSPlaylistFile
             var pos = 0;
 
             FileType = ToolBox.ReadString(data, 8, ref pos);
-            if (FileType != "MPLS0100" && FileType != "MPLS0200" && FileType != "MPLS0300")
+            if (!string.Equals(FileType, "MPLS0100", StringComparison.Ordinal)
+                && !string.Equals(FileType, "MPLS0200", StringComparison.Ordinal)
+                && !string.Equals(FileType, "MPLS0300", StringComparison.Ordinal))
             {
                 throw new Exception($"Playlist {_fileInfo.Name} has an unknown file type {FileType}.");
             }
@@ -207,7 +209,7 @@ public class TSPlaylistFile
             // misc flags
             pos = 0x38;
             var miscFlags = ReadByte(data, ref pos);
-                
+
             // MVC_Base_view_R_flag is stored in 4th bit
             MVCBaseViewR = (miscFlags & 0x10) != 0;
 
@@ -232,7 +234,7 @@ public class TSPlaylistFile
                 {
                     streamFile = streamFiles[streamFileName];
                 }
-                if (streamFile == null)
+                if (streamFile is null)
                 {
                     Debug.WriteLine($"Playlist {_fileInfo.Name} referenced missing file {streamFileName}.");
                 }
@@ -243,7 +245,7 @@ public class TSPlaylistFile
                 {
                     streamClipFile = streamClipFiles[streamClipFileName];
                 }
-                if (streamClipFile == null)
+                if (streamClipFile is null)
                 {
                     throw new Exception($"Playlist {_fileInfo.Name} referenced missing file {streamFileName}.");
                 }
@@ -292,7 +294,7 @@ public class TSPlaylistFile
                         {
                             angleFile = streamFiles[angleFileName];
                         }
-                        if (angleFile == null)
+                        if (angleFile is null)
                         {
                             throw new Exception($"Playlist {_fileInfo.Name} referenced missing angle file {angleFileName}.");
                         }
@@ -303,7 +305,7 @@ public class TSPlaylistFile
                         {
                             angleClipFile = streamClipFiles[angleClipFileName];
                         }
-                        if (angleClipFile == null)
+                        if (angleClipFile is null)
                         {
                             throw new Exception($"Playlist {_fileInfo.Name} referenced missing angle file {angleClipFileName}.");
                         }
@@ -341,14 +343,14 @@ public class TSPlaylistFile
                 for (var i = 0; i < streamCountVideo; i++)
                 {
                     var stream = CreatePlaylistStream(data, ref pos);
-                    if (stream == null) continue;
+                    if (stream is null) continue;
                     if (!PlaylistStreams.ContainsKey(stream.PID) || streamClip.RelativeLength > 0.01)
                         PlaylistStreams[stream.PID] = stream;
                 }
                 for (var i = 0; i < streamCountAudio; i++)
                 {
                     var stream = CreatePlaylistStream(data, ref pos);
-                    if (stream == null) continue;
+                    if (stream is null) continue;
 
                     if (!PlaylistStreams.ContainsKey(stream.PID) || streamClip.RelativeLength > 0.01)
                         PlaylistStreams[stream.PID] = stream;
@@ -356,7 +358,7 @@ public class TSPlaylistFile
                 for (var i = 0; i < streamCountPg; i++)
                 {
                     var stream = CreatePlaylistStream(data, ref pos);
-                    if (stream == null) continue;
+                    if (stream is null) continue;
 
                     if (!PlaylistStreams.ContainsKey(stream.PID) || streamClip.RelativeLength > 0.01)
                         PlaylistStreams[stream.PID] = stream;
@@ -364,7 +366,7 @@ public class TSPlaylistFile
                 for (var i = 0; i < streamCountIg; i++)
                 {
                     var stream = CreatePlaylistStream(data, ref pos);
-                    if (stream == null) continue;
+                    if (stream is null) continue;
 
                     if (!PlaylistStreams.ContainsKey(stream.PID) || streamClip.RelativeLength > 0.01)
                         PlaylistStreams[stream.PID] = stream;
@@ -372,7 +374,7 @@ public class TSPlaylistFile
                 for (var i = 0; i < streamCountSecondaryAudio; i++)
                 {
                     var stream = CreatePlaylistStream(data, ref pos);
-                    if (stream != null)
+                    if (stream is not null)
                     {
                         if (!PlaylistStreams.ContainsKey(stream.PID) || streamClip.RelativeLength > 0.01)
                             PlaylistStreams[stream.PID] = stream;
@@ -382,7 +384,7 @@ public class TSPlaylistFile
                 for (var i = 0; i < streamCountSecondaryVideo; i++)
                 {
                     var stream = CreatePlaylistStream(data, ref pos);
-                    if (stream != null)
+                    if (stream is not null)
                     {
                         if (!PlaylistStreams.ContainsKey(stream.PID) || streamClip.RelativeLength > 0.01)
                             PlaylistStreams[stream.PID] = stream;
@@ -396,7 +398,7 @@ public class TSPlaylistFile
                 for (var i = 0; i < streamCountPIP; i++)
                 {
                     var stream = CreatePlaylistStream(data, ref pos);
-                    if (stream != null) PlaylistStreams[stream.PID] = stream;
+                    if (stream is not null) PlaylistStreams[stream.PID] = stream;
                 }
                 */
 
@@ -409,7 +411,7 @@ public class TSPlaylistFile
 
             for (var chapterIndex = 0; chapterIndex < chapterCount; chapterIndex++)
             {
-                int chapterType = data[pos+1];
+                int chapterType = data[pos + 1];
 
                 if (chapterType == 1)
                 {
@@ -454,7 +456,7 @@ public class TSPlaylistFile
         var clipTimes = new Dictionary<string, List<double>>();
         foreach (var clip in StreamClips.Where(clip => clip!.AngleIndex == 0))
         {
-            if (clip.Name != null && clipTimes.ContainsKey(clip.Name))
+            if (clip.Name is not null && clipTimes.ContainsKey(clip.Name))
             {
                 if (clipTimes[clip.Name].Contains(clip.TimeIn))
                 {
@@ -466,7 +468,7 @@ public class TSPlaylistFile
             }
             else
             {
-                if (clip.Name != null) 
+                if (clip.Name is not null)
                     clipTimes[clip.Name] = new List<double> { clip.TimeIn };
             }
         }
@@ -615,7 +617,7 @@ public class TSPlaylistFile
 
         pos = streamPos + streamLength;
 
-        if (stream == null) return null;
+        if (stream is null) return null;
 
         stream.PID = (ushort)pid;
         stream.StreamType = streamType;
@@ -641,14 +643,14 @@ public class TSPlaylistFile
         }
         foreach (var clip in StreamClips)
         {
-            if (referenceClip?.StreamFile == null && clip.StreamFile != null)
+            if (referenceClip?.StreamFile is null && clip.StreamFile is not null)
                 referenceClip = clip;
 
             if (clip.StreamClipFile.Streams.Count > referenceClip?.StreamClipFile.Streams.Count && clip.RelativeLength > 0.01)
             {
                 referenceClip = clip;
             }
-            else if (clip.Length > referenceClip?.Length && clip.StreamFile != null)
+            else if (clip.Length > referenceClip?.Length && clip.StreamFile is not null)
             {
                 referenceClip = clip;
             }
@@ -668,14 +670,14 @@ public class TSPlaylistFile
             }
         }
 
-        if (referenceClip == null) return;
+        if (referenceClip is null) return;
 
         foreach (var clipStream in referenceClip.StreamClipFile.Streams.Values!)
         {
-            if (clipStream != null && Streams.ContainsKey(clipStream.PID)) continue;
+            if (clipStream is not null && Streams.ContainsKey(clipStream.PID)) continue;
 
             var stream = clipStream?.Clone();
-            if (clipStream != null) Streams[clipStream.PID] = stream;
+            if (clipStream is not null) Streams[clipStream.PID] = stream;
 
             if (!IsCustom && !PlaylistStreams.ContainsKey(stream.PID))
             {
@@ -701,12 +703,12 @@ public class TSPlaylistFile
             }
         }
 
-        if (referenceClip.StreamFile != null)
+        if (referenceClip.StreamFile is not null)
         {
             // TODO: Better way to add this in?
             if (BDInfoSettings.EnableSSIF &&
-                referenceClip.StreamFile.InterleavedFile != null &&
-                referenceClip.StreamFile.Streams.ContainsKey(4114) && 
+                referenceClip.StreamFile.InterleavedFile is not null &&
+                referenceClip.StreamFile.Streams.ContainsKey(4114) &&
                 !Streams.ContainsKey(4114))
             {
                 var stream = referenceClip.StreamFile.Streams[4114].Clone();
@@ -736,8 +738,8 @@ public class TSPlaylistFile
                 {
                     ((TSVideoStream)stream).EncodingProfile =
                         ((TSVideoStream)clipStream).EncodingProfile;
-                    ((TSVideoStream) stream).ExtendedData = 
-                        ((TSVideoStream) clipStream).ExtendedData;
+                    ((TSVideoStream)stream).ExtendedData =
+                        ((TSVideoStream)clipStream).ExtendedData;
                 }
                 else if (stream.IsAudioStream &&
                          clipStream.IsAudioStream)
@@ -777,7 +779,7 @@ public class TSPlaylistFile
                     {
                         audioStream.ExtendedData = clipAudioStream.ExtendedData;
                     }
-                    if (clipAudioStream.CoreStream != null)
+                    if (clipAudioStream.CoreStream is not null)
                     {
                         audioStream.CoreStream = (TSAudioStream)clipAudioStream.CoreStream.Clone();
                     }
@@ -787,7 +789,7 @@ public class TSPlaylistFile
                 {
                     var graphicsStream = (TSGraphicsStream)stream;
                     var clipGraphicsStream = (TSGraphicsStream)clipStream;
-                            
+
                     graphicsStream.Captions = clipGraphicsStream.Captions;
                     graphicsStream.ForcedCaptions = clipGraphicsStream.ForcedCaptions;
                     graphicsStream.Width = clipGraphicsStream.Width;
@@ -854,7 +856,7 @@ public class TSPlaylistFile
             clip.PacketCount = 0;
             clip.PacketSeconds = 0;
 
-            if (clip.StreamFile == null) continue;
+            if (clip.StreamFile is null) continue;
 
             foreach (var stream in clip.StreamFile.Streams.Values)
             {
@@ -892,17 +894,17 @@ public class TSPlaylistFile
 
     public static int CompareVideoStreams(TSVideoStream x, TSVideoStream y)
     {
-        if (x == null && y == null)
+        if (x is null && y is null)
         {
             return 0;
         }
 
-        if (x == null && y != null)
+        if (x is null && y is not null)
         {
             return 1;
         }
 
-        if (x != null && y == null)
+        if (x is not null && y is null)
         {
             return -1;
         }
@@ -937,17 +939,17 @@ public class TSPlaylistFile
             return 0;
         }
 
-        if (x == null && y == null)
+        if (x is null && y is null)
         {
             return 0;
         }
 
-        if (x == null && y != null)
+        if (x is null && y is not null)
         {
             return -1;
         }
 
-        if (x != null && y == null)
+        if (x is not null && y is null)
         {
             return 1;
         }
@@ -987,7 +989,7 @@ public class TSPlaylistFile
 
         if (x.LanguageCode != y.LanguageCode)
             return string.CompareOrdinal(x.LanguageName, y.LanguageName);
-            
+
         if (x.PID < y.PID)
         {
             return -1;
@@ -1003,17 +1005,17 @@ public class TSPlaylistFile
             return 0;
         }
 
-        if (x == null && y == null)
+        if (x is null && y is null)
         {
             return 0;
         }
 
-        if (x == null && y != null)
+        if (x is null && y is not null)
         {
             return -1;
         }
 
-        if (x != null && y == null)
+        if (x is not null && y is null)
         {
             return 1;
         }
@@ -1028,7 +1030,7 @@ public class TSPlaylistFile
             return 1;
         }
 
-        if (x.LanguageCode != y.LanguageCode) 
+        if (x.LanguageCode != y.LanguageCode)
             return string.CompareOrdinal(x.LanguageName, y.LanguageName);
 
         if (x.PID > y.PID)
@@ -1052,17 +1054,17 @@ public class TSPlaylistFile
             return 0;
         }
 
-        if (x == null && y == null)
+        if (x is null && y is null)
         {
             return 0;
         }
 
-        if (x == null && y != null)
+        if (x is null && y is not null)
         {
             return -1;
         }
 
-        if (x != null && y == null)
+        if (x is not null && y is null)
         {
             return 1;
         }
@@ -1090,7 +1092,7 @@ public class TSPlaylistFile
             return 1;
         }
 
-        if (x.LanguageCode != y.LanguageCode) 
+        if (x.LanguageCode != y.LanguageCode)
             return string.CompareOrdinal(x.LanguageName, y.LanguageName);
 
         if (x.PID > y.PID)

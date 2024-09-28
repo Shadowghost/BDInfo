@@ -209,7 +209,7 @@ public abstract class TSCodecDTSHD
         }
 
         // TODO
-        if (stream.CoreStream != null)
+        if (stream.CoreStream is not null)
         {
             var coreStream = stream.CoreStream;
             if (coreStream.AudioMode == TSAudioMode.Extended &&
@@ -234,7 +234,7 @@ public abstract class TSCodecDTSHD
         {
             stream.IsVBR = false;
             stream.BitRate = bitrate;
-            if (stream.CoreStream != null)
+            if (stream.CoreStream is not null)
             {
                 stream.BitRate += stream.CoreStream.BitRate;
                 stream.IsInitialized = true;

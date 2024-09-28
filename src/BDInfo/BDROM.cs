@@ -76,7 +76,7 @@ public class BDROM
         //
         DirectoryBDMV = GetDirectoryBDMV(path);
 
-        if (DirectoryBDMV == null)
+        if (DirectoryBDMV is null)
         {
             throw new Exception("Unable to locate BD structure.");
         }
@@ -91,7 +91,7 @@ public class BDROM
         DirectorySSIF = GetDirectory("SSIF", DirectorySTREAM, 0);
         DirectoryMeta = GetDirectory("META", DirectoryBDMV, 0);
 
-        if (DirectoryCLIPINF == null || DirectoryPLAYLIST == null)
+        if (DirectoryCLIPINF is null || DirectoryPLAYLIST is null)
         {
             throw new Exception("Unable to locate BD structure.");
         }
@@ -100,9 +100,9 @@ public class BDROM
         Size = (ulong)GetDirectorySize(DirectoryRoot);
 
         var indexFiles = DirectoryBDMV?.GetFiles();
-        var indexFile = indexFiles?.FirstOrDefault(t => t.Name.ToLower() == "index.bdmv");
+        var indexFile = indexFiles?.FirstOrDefault(t => string.Equals(t.Name, "index.bdmv", StringComparison.OrdinalIgnoreCase));
 
-        if (indexFile != null)
+        if (indexFile is not null)
         {
             using var indexStream = indexFile.OpenRead();
             ReadIndexVersion(indexStream);
@@ -126,7 +126,7 @@ public class BDROM
             IsBDJava = true;
         }
 
-        if (DirectorySNP != null &&
+        if (DirectorySNP is not null &&
             (DirectorySNP.GetFiles("*.mnv").Length > 0 || DirectorySNP.GetFiles("*.MNV").Length > 0))
         {
             IsPSP = true;
@@ -138,7 +138,7 @@ public class BDROM
         }
 
         var fullName = DirectoryRoot.FullName;
-        if (fullName != null && File.Exists(Path.Combine(fullName, "FilmIndex.xml")))
+        if (fullName is not null && File.Exists(Path.Combine(fullName, "FilmIndex.xml")))
         {
             IsDBOX = true;
         }
@@ -146,13 +146,13 @@ public class BDROM
         var metaFiles = DirectoryMeta?.GetFiles("bdmt_eng.xml", SearchOption.AllDirectories);
         if (metaFiles is { Length: > 0 })
         {
-            ReadDiscTitle(metaFiles.First().OpenText());
+            ReadDiscTitle(metaFiles.FirstOrDefault().OpenText());
         }
 
         //
         // Initialize file lists.
         //
-        if (DirectoryPLAYLIST != null)
+        if (DirectoryPLAYLIST is not null)
         {
             var files = DirectoryPLAYLIST.GetFiles("*.mpls");
             if (files.Length == 0)
@@ -165,7 +165,7 @@ public class BDROM
             }
         }
 
-        if (DirectorySTREAM != null)
+        if (DirectorySTREAM is not null)
         {
             var files = DirectorySTREAM.GetFiles("*.m2ts");
             if (files.Length == 0)
@@ -178,7 +178,7 @@ public class BDROM
             }
         }
 
-        if (DirectoryCLIPINF != null)
+        if (DirectoryCLIPINF is not null)
         {
             var files = DirectoryCLIPINF.GetFiles("*.clpi");
             if (files.Length == 0)
@@ -191,7 +191,7 @@ public class BDROM
             }
         }
 
-        if (DirectorySSIF != null)
+        if (DirectorySSIF is not null)
         {
             var files = DirectorySSIF.GetFiles("*.ssif");
             if (files.Length == 0)
@@ -216,7 +216,7 @@ public class BDROM
             var xNode = xDoc.DocumentElement?.SelectSingleNode("di:discinfo/di:title/di:name", xNsMgr);
             DiscTitle = xNode?.InnerText;
 
-            if (!string.IsNullOrEmpty(DiscTitle) && DiscTitle.ToLowerInvariant() == "blu-ray")
+            if (!string.IsNullOrEmpty(DiscTitle) && string.Equals(DiscTitle, "blu-ray", StringComparison.OrdinalIgnoreCase))
                 DiscTitle = null;
         }
         catch (Exception)
@@ -242,7 +242,7 @@ public class BDROM
             catch (Exception ex)
             {
                 errorStreamClipFiles.Add(streamClipFile);
-                if (StreamClipFileScanError != null)
+                if (StreamClipFileScanError is not null)
                 {
                     if (!StreamClipFileScanError(streamClipFile, ex))
                     {
@@ -276,7 +276,7 @@ public class BDROM
             catch (Exception ex)
             {
                 errorPlaylistFiles.Add(playlistFile);
-                if (PlaylistFileScanError != null)
+                if (PlaylistFileScanError is not null)
                 {
                     if (!PlaylistFileScanError(playlistFile, ex))
                     {
@@ -300,7 +300,7 @@ public class BDROM
             catch (Exception ex)
             {
                 errorStreamFiles.Add(streamFile);
-                if (StreamFileScanError != null)
+                if (StreamFileScanError is not null)
                 {
                     if (!StreamFileScanError(streamFile, ex))
                     {
@@ -350,9 +350,9 @@ public class BDROM
     {
         var dir = path;
 
-        while (dir != null)
+        while (dir is not null)
         {
-            if (dir.Name == "BDMV")
+            if (string.Equals(dir.Name, "BDMV", StringComparison.Ordinal))
             {
                 return dir;
             }
@@ -364,7 +364,7 @@ public class BDROM
 
     private static IDirectoryInfo GetDirectory(string name, IDirectoryInfo dir, int searchDepth)
     {
-        if (dir == null) return null;
+        if (dir is null) return null;
 
         var children = dir.GetDirectories();
         foreach (var child in children)
@@ -388,7 +388,7 @@ public class BDROM
     private static long GetDirectorySize(IDirectoryInfo directoryInfo)
     {
         var pathFiles = directoryInfo.GetFiles();
-        var size = pathFiles.Where(pathFile => pathFile.Extension.ToUpper() != ".SSIF").Sum(pathFile => pathFile.Length);
+        var size = pathFiles.Where(pathFile => !string.Equals(pathFile.Extension, ".SSIF", StringComparison.OrdinalIgnoreCase)).Sum(pathFile => pathFile.Length);
 
         var pathChildren = directoryInfo.GetDirectories();
         size += pathChildren.Sum(GetDirectorySize);
@@ -399,17 +399,17 @@ public class BDROM
     {
         // TODO: Use interleaved file sizes
 
-        if (x.FileInfo == null && y.FileInfo == null)
+        if (x.FileInfo is null && y.FileInfo is null)
         {
             return 0;
         }
 
-        if (x.FileInfo == null && y.FileInfo != null)
+        if (x.FileInfo is null && y.FileInfo is not null)
         {
             return 1;
         }
 
-        if (y.FileInfo == null && x.FileInfo != null)
+        if (y.FileInfo is null && x.FileInfo is not null)
         {
             return -1;
         }
@@ -429,12 +429,13 @@ public class BDROM
 
     private void ReadIndexVersion(Stream indexStream)
     {
-        var buffer = new byte[8];
-        var count = indexStream.Read(buffer, 0, 8);
-        var pos = 0;
-        if (count <= 0) return;
-
-        var indexVer = ToolBox.ReadString(buffer, count, ref pos);
-        IsUHD = indexVer == "INDX0300";
+        Span<byte> buffer = stackalloc byte[8];
+        int count = indexStream.Read(buffer);
+        int pos = 0;
+        if (count > 0)
+        {
+            var indexVer = ToolBox.ReadString(buffer, ref pos);
+            IsUHD = indexVer == "INDX0300";
+        }
     }
 }
